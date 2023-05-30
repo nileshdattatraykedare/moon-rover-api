@@ -1,0 +1,27 @@
+API
+placeRover method:
+HTTP method: POST
+Purpose: Places the rover on the tabletop with the provided coordinates and facing direction.
+Request body: RoverPlacementRequest
+Response:
+HTTP 200 OK: Rover placed successfully.
+HTTP 400 Bad Request: Invalid coordinates or placement outside the tabletop.
+moveRover method:
+HTTP method: POST
+Purpose: Moves the rover one step forward in its current facing direction.
+Response:
+HTTP 200 OK: Rover moved successfully.
+HTTP 400 Bad Request: Rover is not placed yet or cannot move further.
+turnRover method:
+HTTP method: POST
+Purpose: Turns the rover either left or right.
+Request parameter: direction (left or right)
+Response:
+HTTP 200 OK: Rover turned left or right successfully.
+HTTP 400 Bad Request: Invalid turn direction or rover is not placed yet.
+getRoverReport method:
+HTTP method: GET
+Purpose: Retrieves the current position and facing direction of the rover.
+Response:
+HTTP 200 OK: Report containing the rover's coordinates and facing direction.
+HTTP 400 Bad Request: Rover is not placed yet.

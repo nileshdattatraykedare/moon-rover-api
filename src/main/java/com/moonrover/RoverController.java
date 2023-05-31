@@ -1,87 +1,89 @@
 package com.moonrover;
 
+import com.moonrover.service.RoverService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class RoverController {
+    private RoverService roverService;
 
-    private Rover rover;
+    @Autowired
+    public RoverController(RoverService roverService) {
+        this.roverService = roverService;
+    }
 
     @PostMapping("/rover/place")
     public ResponseEntity<ApiResponse> placeRover(@RequestBody RoverPlacementRequest request) {
         int x = request.getX();
         int y = request.getY();
         String facing = request.getFacing();
-        // Validate facing has correct direction value
+
+        // Validate if positions are within tabletop bounds
+        if (!Utils.isWithinTabletopBounds(x, y, 5, 5)) {
+            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_COORDINATES, ApiConstants.ERR_INVALID_COORDINATES));
+        }
+
+        // Validate if facing direction is correct
         try {
             Rover.Direction direction = Rover.Direction.valueOf(facing.toUpperCase());
         } catch (IllegalArgumentException e) {
             // Invalid direction
             return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_DIRECTION_VALUE, ApiConstants.ERR_INVALID_DIRECTION));
         }
-        //check if positions are valid as per tabletop size
-        if (Utils.isWithinTabletopBounds(x, y, 5, 5)) {
-            Rover.Direction direction = Rover.Direction.valueOf(facing.toUpperCase());
-            rover = new Rover(x, y, direction);
-            return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_PLACED_SUCCESSFULLY));
-        } else {
-            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_COORDINATES, ApiConstants.ERR_INVALID_COORDINATES));
-        }
+
+        // If validations pass, delegate the placement to the service
+        Rover.Direction direction = Rover.Direction.valueOf(facing.toUpperCase());
+        roverService.placeRover(x, y, direction);
+
+        return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_PLACED_SUCCESSFULLY));
     }
 
     @PostMapping("/rover/move")
     public ResponseEntity<ApiResponse> moveRover() {
-        if (isRoverPlaced()) {// move rover only if rover is on the table top
-            int originalX = rover.getX();
-            int originalY = rover.getY();
-            rover.move();
-            int newX = rover.getX();
-            int newY = rover.getY();
+        if (!isRoverPlaced()) {
+            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
+        }
 
-            // checks if rover has not moved, assumes that it did nove because it was on the edge of the table top
-            if (originalX == newX && originalY == newY) {
-                return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.CANNOT_MOVE_FURTHER, ApiConstants.ERR_CANNOT_MOVE_FURTHER));
-            }
+        try {
+            roverService.moveRover(); // Delegate to roverService to move the rover
 
             return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_MOVED_SUCCESSFULLY));
-        } else {
-            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.CANNOT_MOVE_FURTHER, ApiConstants.ERR_CANNOT_MOVE_FURTHER));
         }
     }
 
     @PostMapping("/rover/turn")
     public ResponseEntity<ApiResponse> turnRover(@RequestParam String direction) {
-        if (isRoverPlaced()) { // turn only if rover is on table top
+        try {
             if (direction.equalsIgnoreCase("left")) {
-                rover.turnLeft();
+                roverService.turnRoverLeft();
                 return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_TURNED_LEFT_SUCCESSFULLY));
             } else if (direction.equalsIgnoreCase("right")) {
-                rover.turnRight();
+                roverService.turnRoverRight();
                 return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_TURNED_RIGHT_SUCCESSFULLY));
             } else {
                 return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_DIRECTION, ApiConstants.ERR_INVALID_DIRECTION));
             }
-        } else {
+        } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
         }
     }
 
     @GetMapping("/rover/report")
     public ResponseEntity<ApiResponse<ReportResponse>> getRoverReport() {
-        if (isRoverPlaced()) {
-            int x = rover.getX();
-            int y = rover.getY();
-            Rover.Direction facing = rover.getFacing();
-            ReportResponse report = new ReportResponse(x, y, facing.toString());
+        try {
+            ReportResponse report = roverService.getRoverReport();
             return ResponseEntity.ok().body(new ApiResponse<>(report));
-        } else {
+        } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
         }
     }
 
     private boolean isRoverPlaced() {
-        return rover != null;
+        return roverService.isRoverPlaced();
     }
 }
 

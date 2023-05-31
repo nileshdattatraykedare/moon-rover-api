@@ -1,6 +1,6 @@
 package com.moonrover;
 
-class ReportResponse {
+public class ReportResponse {
     private int x;
     private int y;
     private String facing;

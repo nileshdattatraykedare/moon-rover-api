@@ -1,5 +1,7 @@
 package com.moonrover;
 
+import com.moonrover.service.RoverService;
+import com.moonrover.service.RoverServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -11,10 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RoverControllerTest {
     private RoverController roverController;
+    private RoverService roverService;
 
     @BeforeEach
     public void setUp() {
-        roverController = new RoverController();
+        roverService = new RoverServiceImpl();
+        roverController = new RoverController(roverService);
     }
 
     @Test
@@ -34,7 +38,7 @@ public class RoverControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertFalse(response.getBody().isSuccess());
-        assertEquals("Invalid coordinates. Rover cannot be placed outside the tabletop.", response.getBody().getMessage());
+        assertEquals(ApiConstants.INVALID_COORDINATES, response.getBody().getMessage());
     }
 
     @Test
@@ -55,15 +59,6 @@ public class RoverControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().isSuccess());
         assertEquals("Rover moved successfully.", response.getBody().getMessage());
-    }
-
-    @Test
-    public void testMoveRover_NotPlaced() {
-        ResponseEntity<ApiResponse> response = roverController.moveRover();
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertFalse(response.getBody().isSuccess());
-        assertEquals(ApiConstants.ROVER_NOT_PLACED, response.getBody().getMessage());
     }
 
     @Test

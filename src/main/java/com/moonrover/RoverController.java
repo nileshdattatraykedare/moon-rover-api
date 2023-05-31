@@ -13,13 +13,14 @@ public class RoverController {
         int x = request.getX();
         int y = request.getY();
         String facing = request.getFacing();
-// Validate if direction is defined in the Direction enum
+        // Validate facing has correct direction value
         try {
             Rover.Direction direction = Rover.Direction.valueOf(facing.toUpperCase());
         } catch (IllegalArgumentException e) {
             // Invalid direction
             return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_DIRECTION_VALUE, ApiConstants.ERR_INVALID_DIRECTION));
         }
+        //check if positions are valid as per tabletop size
         if (Utils.isWithinTabletopBounds(x, y, 5, 5)) {
             Rover.Direction direction = Rover.Direction.valueOf(facing.toUpperCase());
             rover = new Rover(x, y, direction);
@@ -31,7 +32,7 @@ public class RoverController {
 
     @PostMapping("/rover/move")
     public ResponseEntity<ApiResponse> moveRover() {
-        if (isRoverPlaced()) {
+        if (isRoverPlaced()) {// move rover only if rover is on the table top
             int originalX = rover.getX();
             int originalY = rover.getY();
             rover.move();
@@ -51,7 +52,7 @@ public class RoverController {
 
     @PostMapping("/rover/turn")
     public ResponseEntity<ApiResponse> turnRover(@RequestParam String direction) {
-        if (isRoverPlaced()) {
+        if (isRoverPlaced()) { // turn only if rover is on table top
             if (direction.equalsIgnoreCase("left")) {
                 rover.turnLeft();
                 return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_TURNED_LEFT_SUCCESSFULLY));

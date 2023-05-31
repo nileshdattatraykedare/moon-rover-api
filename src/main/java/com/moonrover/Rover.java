@@ -16,13 +16,14 @@ public class Rover {
         this.y = y;
         this.facing = facing;
     }
-
+    //Places rover on table-top to a position x, y and direction(NORTH|EAST|SOUTH|WEST)
     public void place(int x, int y, Direction facing) {
         this.x = x;
         this.y = y;
         this.facing = facing;
     }
 
+    // it allows rover to move by 1 position at a time in the direction it is facing
     public void move() {
         int newX = x;
         int newY = y;
@@ -74,7 +75,7 @@ public class Rover {
 
     public Direction getFacing() {
         return facing;
-    }
+    } // gets current position of the rover
 
     public enum Direction {
         NORTH,
@@ -82,12 +83,12 @@ public class Rover {
         SOUTH,
         WEST;
 
-        public Direction left() {
+        public Direction left() { //turns rover direction to its left
             int newIndex = (this.ordinal() + 3) % 4;
             return Direction.values()[newIndex];
         }
 
-        public Direction right() {
+        public Direction right() { //turns rover direction to its right
             int newIndex = (this.ordinal() + 1) % 4;
             return Direction.values()[newIndex];
         }

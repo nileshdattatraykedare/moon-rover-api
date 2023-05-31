@@ -57,7 +57,7 @@ public class RoverController {
 
     @PostMapping("/rover/turn")
     public ResponseEntity<ApiResponse> turnRover(@RequestParam String direction) {
-        if (!isRoverPlaced()) {
+        if (!isRoverPlaced()) {// check if rover is not placed
             return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
         }
             if (direction.equalsIgnoreCase("left")) {

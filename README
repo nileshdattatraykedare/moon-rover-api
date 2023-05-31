@@ -1,4 +1,10 @@
-#install using docker
-docker build -t moonroverapiserver
-docker run -p 8000:8080 moonroverapiserver
+# Moon Rover API
 
+# Requirements
+  1. Spring Boot
+  2. Spring Web
+  3. Maven
+
+# Install using docker
+  docker build -t moonroverapiserver
+  docker run -p 80:8080 moonroverapiserver

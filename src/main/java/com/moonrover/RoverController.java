@@ -57,7 +57,9 @@ public class RoverController {
 
     @PostMapping("/rover/turn")
     public ResponseEntity<ApiResponse> turnRover(@RequestParam String direction) {
-        try {
+        if (!isRoverPlaced()) {
+            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
+        }
             if (direction.equalsIgnoreCase("left")) {
                 roverService.turnRoverLeft();
                 return ResponseEntity.ok().body(new ApiResponse(ApiConstants.ROVER_TURNED_LEFT_SUCCESSFULLY));
@@ -67,9 +69,7 @@ public class RoverController {
             } else {
                 return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.INVALID_DIRECTION, ApiConstants.ERR_INVALID_DIRECTION));
             }
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(new ApiResponse(ApiConstants.ROVER_NOT_PLACED, ApiConstants.ERR_ROVER_NOT_PLACED));
-        }
+
     }
 
     @GetMapping("/rover/report")
